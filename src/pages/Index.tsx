@@ -8,7 +8,7 @@ import { SearchBar } from "@/components/SearchBar";
 import { DarkModeToggle } from "@/components/DarkModeToggle";
 import { useAuth } from "@/contexts/AuthContext";
 import type { Post, TagType, SortMode } from "@/lib/types";
-import { MessageSquarePlus, LogOut } from "lucide-react";
+import { MessageSquarePlus, LogOut, Settings } from "lucide-react";
 
 export default function Index() {
   const [posts, setPosts] = useState<Post[]>([]);
@@ -62,15 +62,24 @@ export default function Index() {
           <div className="flex items-center gap-2">
             <DarkModeToggle />
             {user ? (
-              <button
-                onClick={async () => {
-                  await signOut();
-                  navigate("/");
-                }}
-                className="px-3 py-2 rounded-lg bg-secondary text-secondary-foreground hover:bg-secondary/80 transition-colors text-xs font-semibold flex items-center gap-1.5"
-              >
-                <LogOut size={14} /> Logout
-              </button>
+              <>
+                <Link
+                  to="/settings"
+                  className="p-2 rounded-lg bg-secondary text-secondary-foreground hover:bg-secondary/80 transition-colors"
+                  title="Settings"
+                >
+                  <Settings size={16} />
+                </Link>
+                <button
+                  onClick={async () => {
+                    await signOut();
+                    navigate("/");
+                  }}
+                  className="px-3 py-2 rounded-lg bg-secondary text-secondary-foreground hover:bg-secondary/80 transition-colors text-xs font-semibold flex items-center gap-1.5"
+                >
+                  <LogOut size={14} /> Logout
+                </button>
+              </>
             ) : (
               <Link
                 to="/login"
