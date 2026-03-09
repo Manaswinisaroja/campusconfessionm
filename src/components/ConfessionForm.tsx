@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 import { containsBannedWords } from "@/lib/banned-words";
 import type { TagType } from "@/lib/types";
 import { toast } from "sonner";
@@ -20,6 +21,7 @@ export function ConfessionForm({ onPostCreated, onClose }: ConfessionFormProps) 
   const [message, setMessage] = useState("");
   const [tag, setTag] = useState<TagType>("Confession");
   const [loading, setLoading] = useState(false);
+  const { user } = useAuth();
 
   const charCount = message.length;
   const isOverLimit = charCount > MAX_CHARS;
@@ -40,7 +42,11 @@ export function ConfessionForm({ onPostCreated, onClose }: ConfessionFormProps) 
     }
 
     setLoading(true);
-    const { error } = await supabase.from("posts").insert({ message: trimmed, tag });
+    const { error } = await supabase.from("posts").insert({
+      message: trimmed,
+      tag,
+      user_id: user?.id || null,
+    });
     setLoading(false);
 
     if (error) {
@@ -56,7 +62,7 @@ export function ConfessionForm({ onPostCreated, onClose }: ConfessionFormProps) 
   };
 
   return (
-    <div className="rounded-lg border border-border bg-card p-5 shadow-sm animate-fade-in-up">
+    <div className="rounded-xl border border-border bg-card p-5 shadow-sm animate-fade-in-up">
       <div className="flex items-center justify-between mb-4">
         <h2 className="font-display text-lg font-semibold text-card-foreground">Share your confession</h2>
         {onClose && (
@@ -77,6 +83,11 @@ export function ConfessionForm({ onPostCreated, onClose }: ConfessionFormProps) 
         <span className={`text-xs font-medium ${isOverLimit ? "text-destructive" : "text-muted-foreground"}`}>
           {charCount}/{MAX_CHARS}
         </span>
+        {user && (
+          <span className="text-xs text-muted-foreground">
+            Posting as <span className="font-semibold text-foreground">{user.user_metadata?.full_name || user.email}</span>
+          </span>
+        )}
       </div>
 
       <div className="flex flex-col sm:flex-row gap-3">

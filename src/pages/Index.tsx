@@ -1,9 +1,10 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { ConfessionForm } from "@/components/ConfessionForm";
 import { PostCard } from "@/components/PostCard";
 import { FeedControls } from "@/components/FeedControls";
+import { SearchBar } from "@/components/SearchBar";
 import { DarkModeToggle } from "@/components/DarkModeToggle";
 import { useAuth } from "@/contexts/AuthContext";
 import type { Post, TagType, SortMode } from "@/lib/types";
@@ -14,17 +15,25 @@ export default function Index() {
   const [loading, setLoading] = useState(true);
   const [sort, setSort] = useState<SortMode>("new");
   const [activeTag, setActiveTag] = useState<TagType | "All">("All");
+  const [searchQuery, setSearchQuery] = useState("");
   const [showForm, setShowForm] = useState(false);
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
 
   const fetchPosts = useCallback(async () => {
-    let query = supabase.from("posts").select("*");
+    let query = supabase
+      .from("posts")
+      .select("*, profiles(display_name, avatar_url)");
 
-    if (activeTag !== "All") query = query.eq("tag", activeTag);
-    query = sort === "new"
-      ? query.order("created_at", { ascending: false })
-      : query.order("vote_count", { ascending: false });
+    if (activeTag !== "All") {
+      query = query.eq("tag", activeTag);
+    }
+
+    if (sort === "new") {
+      query = query.order("created_at", { ascending: false });
+    } else {
+      query = query.order("vote_count", { ascending: false });
+    }
 
     const { data } = await query;
     setPosts((data as Post[]) || []);
@@ -34,6 +43,16 @@ export default function Index() {
   useEffect(() => {
     fetchPosts();
   }, [fetchPosts]);
+
+  // Filter posts by search query
+  const filteredPosts = useMemo(() => {
+    if (!searchQuery.trim()) return posts;
+    const query = searchQuery.toLowerCase();
+    return posts.filter(post => 
+      post.message.toLowerCase().includes(query) ||
+      post.tag.toLowerCase().includes(query)
+    );
+  }, [posts, searchQuery]);
 
   return (
     <div className="min-h-screen bg-background">
@@ -67,7 +86,7 @@ export default function Index() {
       <main className="max-w-2xl mx-auto px-4 py-6 pb-24 space-y-5">
         <button
           onClick={() => setShowForm(!showForm)}
-          className="w-full py-3 rounded-lg bg-primary text-primary-foreground font-display font-semibold text-sm hover:bg-primary/90 transition-colors flex items-center justify-center gap-2 shadow-sm"
+          className="w-full py-3 rounded-xl bg-primary text-primary-foreground font-display font-semibold text-sm hover:bg-primary/90 transition-all duration-200 flex items-center justify-center gap-2 shadow-sm hover:shadow-md"
         >
           <MessageSquarePlus size={18} />
           {showForm ? "Close" : "Post a Confession"}
@@ -75,22 +94,28 @@ export default function Index() {
 
         {showForm && <ConfessionForm onPostCreated={fetchPosts} onClose={() => setShowForm(false)} />}
 
+        <SearchBar value={searchQuery} onChange={setSearchQuery} />
+
         <FeedControls sort={sort} onSortChange={setSort} activeTag={activeTag} onTagChange={setActiveTag} />
 
         {loading ? (
           <div className="space-y-4">
             {[1, 2, 3].map((i) => (
-              <div key={i} className="rounded-lg bg-card border border-border p-4 animate-pulse h-24" />
+              <div key={i} className="rounded-xl bg-card border border-border p-4 animate-pulse h-32" />
             ))}
           </div>
-        ) : posts.length === 0 ? (
+        ) : filteredPosts.length === 0 ? (
           <div className="text-center py-16 text-muted-foreground">
-            <p className="text-lg font-display font-semibold">No confessions yet</p>
-            <p className="text-sm mt-1">Be the first to spill! ☕</p>
+            <p className="text-lg font-display font-semibold">
+              {searchQuery ? "No confessions found" : "No confessions yet"}
+            </p>
+            <p className="text-sm mt-1">
+              {searchQuery ? "Try a different search term" : "Be the first to spill! ☕"}
+            </p>
           </div>
         ) : (
-          <div className="space-y-3">
-            {posts.map((post) => (
+          <div className="space-y-4">
+            {filteredPosts.map((post) => (
               <PostCard key={post.id} post={post} onVoteUpdate={fetchPosts} />
             ))}
           </div>
