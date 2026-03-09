@@ -23,11 +23,11 @@ export function CommentSection({ postId }: CommentSectionProps) {
   const fetchComments = async () => {
     const { data } = await supabase
       .from("comments")
-      .select("*, profiles(display_name, avatar_url)")
+      .select("*, profiles!comments_user_id_profiles_fkey(display_name, avatar_url)")
       .eq("post_id", postId)
       .order("created_at", { ascending: true });
     
-    setComments((data as Comment[]) || []);
+    setComments((data as unknown as Comment[]) || []);
   };
 
   useEffect(() => {

@@ -23,7 +23,7 @@ export default function Index() {
   const fetchPosts = useCallback(async () => {
     let query = supabase
       .from("posts")
-      .select("*, profiles(display_name, avatar_url)");
+      .select("*, profiles!posts_user_id_profiles_fkey(display_name, avatar_url)");
 
     if (activeTag !== "All") {
       query = query.eq("tag", activeTag);
@@ -36,7 +36,7 @@ export default function Index() {
     }
 
     const { data } = await query;
-    setPosts((data as Post[]) || []);
+    setPosts((data as unknown as Post[]) || []);
     setLoading(false);
   }, [sort, activeTag]);
 
