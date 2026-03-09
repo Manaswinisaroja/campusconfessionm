@@ -1,8 +1,12 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 import type { Post } from "@/lib/types";
-import { ChevronUp, ChevronDown } from "lucide-react";
+import { ChevronUp, ChevronDown, Flag, User } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
+import { toast } from "sonner";
+import { CommentSection } from "./CommentSection";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 const TAG_CLASS_MAP: Record<string, string> = {
   Confession: "tag-confession",
@@ -17,68 +21,177 @@ interface PostCardProps {
 }
 
 export function PostCard({ post, onVoteUpdate }: PostCardProps) {
-  const [voted, setVoted] = useState<"up" | "down" | null>(null);
+  const [userVote, setUserVote] = useState<-1 | 1 | null>(null);
+  const [localVoteCount, setLocalVoteCount] = useState(post.vote_count);
   const [animating, setAnimating] = useState(false);
-  const storageKey = `vote_${post.id}`;
+  const [reported, setReported] = useState(false);
+  const { user } = useAuth();
 
-  // Check localStorage for existing vote
-  const existingVote = typeof window !== "undefined" ? (localStorage.getItem(storageKey) as "up" | "down" | null) : null;
-  const currentVote = voted ?? existingVote;
+  // Load user's existing vote
+  useEffect(() => {
+    const loadUserVote = async () => {
+      if (!user) {
+        // Check localStorage for anonymous users
+        const stored = localStorage.getItem(`vote_${post.id}`);
+        if (stored) setUserVote(parseInt(stored) as -1 | 1);
+        return;
+      }
 
-  const handleVote = async (direction: "up" | "down") => {
-    if (currentVote === direction) return; // Already voted this way
+      const { data } = await supabase
+        .from("votes")
+        .select("vote_type")
+        .eq("post_id", post.id)
+        .eq("user_id", user.id)
+        .single();
 
-    const delta = direction === "up" ? 1 : -1;
-    const adjustment = currentVote ? (direction === "up" ? 2 : -2) : delta;
+      if (data) setUserVote(data.vote_type as -1 | 1);
+    };
 
-    setVoted(direction);
-    localStorage.setItem(storageKey, direction);
+    loadUserVote();
+  }, [user, post.id]);
+
+  // Update local count when post changes
+  useEffect(() => {
+    setLocalVoteCount(post.vote_count);
+  }, [post.vote_count]);
+
+  const handleVote = async (direction: -1 | 1) => {
     setAnimating(true);
     setTimeout(() => setAnimating(false), 300);
 
-    await supabase
-      .from("posts")
-      .update({ vote_count: post.vote_count + adjustment })
-      .eq("id", post.id);
+    if (!user) {
+      // Anonymous voting with localStorage
+      const stored = localStorage.getItem(`vote_${post.id}`);
+      if (stored) {
+        toast.error("You've already voted on this post");
+        return;
+      }
+      
+      localStorage.setItem(`vote_${post.id}`, direction.toString());
+      setUserVote(direction);
+      setLocalVoteCount(prev => prev + direction);
+      
+      await supabase
+        .from("posts")
+        .update({ vote_count: post.vote_count + direction })
+        .eq("id", post.id);
+      
+      onVoteUpdate();
+      return;
+    }
+
+    // Authenticated voting
+    if (userVote === direction) {
+      // Remove vote
+      await supabase
+        .from("votes")
+        .delete()
+        .eq("post_id", post.id)
+        .eq("user_id", user.id);
+
+      await supabase
+        .from("posts")
+        .update({ vote_count: localVoteCount - direction })
+        .eq("id", post.id);
+
+      setUserVote(null);
+      setLocalVoteCount(prev => prev - direction);
+    } else if (userVote) {
+      // Change vote
+      await supabase
+        .from("votes")
+        .update({ vote_type: direction })
+        .eq("post_id", post.id)
+        .eq("user_id", user.id);
+
+      await supabase
+        .from("posts")
+        .update({ vote_count: localVoteCount - userVote + direction })
+        .eq("id", post.id);
+
+      setLocalVoteCount(prev => prev - userVote + direction);
+      setUserVote(direction);
+    } else {
+      // New vote
+      await supabase.from("votes").insert({
+        post_id: post.id,
+        user_id: user.id,
+        vote_type: direction,
+      });
+
+      await supabase
+        .from("posts")
+        .update({ vote_count: localVoteCount + direction })
+        .eq("id", post.id);
+
+      setUserVote(direction);
+      setLocalVoteCount(prev => prev + direction);
+    }
 
     onVoteUpdate();
   };
 
+  const handleReport = async () => {
+    if (reported) return;
+
+    const { error } = await supabase.from("reports").insert({
+      post_id: post.id,
+      user_id: user?.id || null,
+      reason: "Inappropriate content",
+    });
+
+    if (error?.code === "23505") {
+      toast.info("You've already reported this post");
+    } else if (error) {
+      toast.error("Failed to report. Try again.");
+    } else {
+      setReported(true);
+      toast.success("Post reported. Thank you!");
+    }
+  };
+
   const timeAgo = formatDistanceToNow(new Date(post.created_at), { addSuffix: true });
+  const displayName = post.profiles?.display_name || "Anonymous";
+  const avatarUrl = post.profiles?.avatar_url;
+
+  const getInitials = (name: string) => {
+    if (name === "Anonymous") return "?";
+    return name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2);
+  };
 
   return (
-    <div className="rounded-lg border border-border bg-card p-4 shadow-sm hover:shadow-md transition-shadow animate-fade-in-up">
+    <div className="rounded-xl border border-border bg-card p-4 shadow-sm hover:shadow-md transition-all duration-200 animate-fade-in-up">
       <div className="flex gap-3">
         {/* Vote column */}
         <div className="flex flex-col items-center gap-0.5 pt-1">
           <button
-            onClick={() => handleVote("up")}
-            className={`p-1 rounded-md transition-colors ${
-              currentVote === "up"
-                ? "text-primary bg-accent"
-                : "text-muted-foreground hover:text-primary hover:bg-accent"
+            onClick={() => handleVote(1)}
+            className={`p-1.5 rounded-lg transition-all duration-200 ${
+              userVote === 1
+                ? "text-primary bg-primary/20 scale-110"
+                : "text-muted-foreground hover:text-primary hover:bg-primary/10"
             }`}
           >
             <ChevronUp size={20} />
           </button>
           <span
-            className={`text-sm font-semibold font-display tabular-nums ${
-              animating ? "animate-vote-pop" : ""
+            className={`text-sm font-bold font-display tabular-nums transition-all duration-200 ${
+              animating ? "scale-125" : ""
             } ${
-              post.vote_count > 0
+              localVoteCount > 0
                 ? "text-primary"
-                : post.vote_count < 0
+                : localVoteCount < 0
                 ? "text-destructive"
                 : "text-muted-foreground"
             }`}
           >
-            {post.vote_count}
+            {localVoteCount}
           </span>
           <button
-            onClick={() => handleVote("down")}
-            className={`p-1 rounded-md transition-colors ${
-              currentVote === "down"
-                ? "text-destructive bg-destructive/10"
+            onClick={() => handleVote(-1)}
+            className={`p-1.5 rounded-lg transition-all duration-200 ${
+              userVote === -1
+                ? "text-destructive bg-destructive/20 scale-110"
                 : "text-muted-foreground hover:text-destructive hover:bg-destructive/10"
             }`}
           >
@@ -88,15 +201,41 @@ export function PostCard({ post, onVoteUpdate }: PostCardProps) {
 
         {/* Content */}
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-2">
+          {/* Header with user, tag, time */}
+          <div className="flex items-center gap-2 mb-2 flex-wrap">
+            <div className="flex items-center gap-1.5">
+              <Avatar className="h-5 w-5">
+                <AvatarImage src={avatarUrl || undefined} />
+                <AvatarFallback className="text-[9px] bg-accent">
+                  {getInitials(displayName)}
+                </AvatarFallback>
+              </Avatar>
+              <span className="text-xs font-semibold text-foreground">{displayName}</span>
+            </div>
             <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full ${TAG_CLASS_MAP[post.tag]}`}>
               {post.tag}
             </span>
             <span className="text-xs text-muted-foreground">{timeAgo}</span>
+            <button
+              onClick={handleReport}
+              className={`ml-auto p-1 rounded transition-colors ${
+                reported
+                  ? "text-muted-foreground cursor-default"
+                  : "text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+              }`}
+              title="Report post"
+            >
+              <Flag size={14} />
+            </button>
           </div>
+
+          {/* Message */}
           <p className="text-card-foreground text-sm leading-relaxed whitespace-pre-wrap break-words">
             {post.message}
           </p>
+
+          {/* Comments */}
+          <CommentSection postId={post.id} />
         </div>
       </div>
     </div>
