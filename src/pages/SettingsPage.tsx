@@ -5,7 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
-import { ArrowLeft, Check, User } from "lucide-react";
+import { ArrowLeft, Check, User, Shield, Palette } from "lucide-react";
 import { DarkModeToggle } from "@/components/DarkModeToggle";
 
 const AVATAR_OPTIONS = [
@@ -83,7 +83,7 @@ export default function SettingsPage() {
       toast.error("Failed to update profile");
       console.error(error);
     } else {
-      toast.success("Profile updated!");
+      toast.success("Profile updated! ✨");
       navigate("/");
     }
   };
@@ -91,71 +91,74 @@ export default function SettingsPage() {
   if (initialLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="animate-pulse text-muted-foreground">Loading...</div>
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-10 h-10 rounded-2xl skeleton-shimmer" />
+          <div className="h-3 w-24 rounded-full skeleton-shimmer" />
+        </div>
       </div>
     );
   }
 
   return (
     <div className="min-h-screen bg-background">
-      <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-lg border-b border-border">
+      <header className="sticky top-0 z-50 glass-card border-0 border-b border-border/50">
         <div className="max-w-2xl mx-auto px-4 py-3 flex items-center justify-between">
           <button
             onClick={() => navigate("/")}
-            className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
+            className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-all duration-200 active:scale-95"
           >
             <ArrowLeft size={18} />
-            <span className="text-sm font-medium">Back</span>
+            <span className="text-sm font-bold">Back</span>
           </button>
-          <h1 className="font-display text-lg font-bold text-foreground">Settings</h1>
+          <h1 className="font-display text-lg font-bold text-foreground">⚙️ Settings</h1>
           <DarkModeToggle />
         </div>
       </header>
 
-      <main className="max-w-2xl mx-auto px-4 py-8 space-y-8">
+      <main className="max-w-2xl mx-auto px-4 py-8 space-y-6 animate-slide-up">
         {/* Profile Section */}
-        <section className="bg-card border border-border rounded-xl p-6 space-y-6">
+        <section className="glass-card rounded-2xl p-6 space-y-6">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-              <User size={20} className="text-primary" />
+            <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-primary to-accent-foreground flex items-center justify-center shadow-sm">
+              <User size={20} className="text-primary-foreground" />
             </div>
             <div>
-              <h2 className="font-display font-semibold text-foreground">Profile</h2>
-              <p className="text-sm text-muted-foreground">Customize how you appear on confessions</p>
+              <h2 className="font-display font-bold text-foreground">Profile</h2>
+              <p className="text-xs text-muted-foreground">Customize how you appear</p>
             </div>
           </div>
 
           {/* Display Name */}
           <div className="space-y-2">
-            <label className="text-sm font-medium text-foreground">Display Name</label>
+            <label className="text-sm font-bold text-foreground">Display Name</label>
             <Input
               value={displayName}
               onChange={(e) => setDisplayName(e.target.value)}
               placeholder="Enter your display name"
               maxLength={30}
-              className="bg-secondary/50 border-0"
+              className="bg-secondary/30 border-border/40 rounded-xl focus-visible:ring-2 focus-visible:ring-primary/30"
             />
-            <p className="text-xs text-muted-foreground">This name will be shown on your confessions and comments</p>
+            <p className="text-[11px] text-muted-foreground/60">This name will be shown on your confessions and comments</p>
           </div>
 
           {/* Avatar Selection */}
           <div className="space-y-3">
-            <label className="text-sm font-medium text-foreground">Choose Avatar</label>
+            <label className="text-sm font-bold text-foreground">Choose Avatar</label>
             <div className="grid grid-cols-4 sm:grid-cols-8 gap-3">
               {AVATAR_OPTIONS.map((avatar, index) => (
                 <button
                   key={index}
                   onClick={() => setSelectedAvatar(avatar)}
-                  className={`relative w-12 h-12 rounded-full overflow-hidden border-2 transition-all duration-200 hover:scale-110 ${
+                  className={`relative w-12 h-12 rounded-2xl overflow-hidden border-2 transition-all duration-300 hover:scale-110 active:scale-95 ${
                     selectedAvatar === avatar
-                      ? "border-primary ring-2 ring-primary/30 scale-110"
-                      : "border-border hover:border-primary/50"
+                      ? "border-primary ring-2 ring-primary/30 scale-110 shadow-md"
+                      : "border-border/60 hover:border-primary/40"
                   }`}
                 >
                   <img src={avatar} alt={`Avatar ${index + 1}`} className="w-full h-full object-cover" />
                   {selectedAvatar === avatar && (
-                    <div className="absolute inset-0 bg-primary/20 flex items-center justify-center">
-                      <Check size={16} className="text-primary" />
+                    <div className="absolute inset-0 bg-primary/20 flex items-center justify-center backdrop-blur-[1px]">
+                      <Check size={16} className="text-primary drop-shadow-sm" />
                     </div>
                   )}
                 </button>
@@ -164,17 +167,17 @@ export default function SettingsPage() {
           </div>
 
           {/* Preview */}
-          <div className="pt-4 border-t border-border">
-            <p className="text-sm font-medium text-muted-foreground mb-3">Preview</p>
-            <div className="flex items-center gap-3 p-3 bg-secondary/30 rounded-lg">
+          <div className="pt-5 border-t border-border/40">
+            <p className="text-xs font-bold text-muted-foreground mb-3">Preview</p>
+            <div className="flex items-center gap-3 p-4 bg-secondary/20 rounded-2xl border border-border/30">
               <img
                 src={selectedAvatar || AVATAR_OPTIONS[0]}
                 alt="Preview"
-                className="w-10 h-10 rounded-full border border-border"
+                className="w-12 h-12 rounded-2xl border-2 border-border/50 shadow-sm"
               />
               <div>
-                <p className="font-semibold text-foreground">{displayName || "Your Name"}</p>
-                <p className="text-xs text-muted-foreground">This is how others will see you</p>
+                <p className="font-bold text-foreground">{displayName || "Your Name"}</p>
+                <p className="text-xs text-muted-foreground/60">This is how others will see you</p>
               </div>
             </div>
           </div>
@@ -183,17 +186,38 @@ export default function SettingsPage() {
           <Button
             onClick={handleSave}
             disabled={loading || !displayName.trim()}
-            className="w-full"
+            className="w-full rounded-xl bg-gradient-to-r from-primary to-accent-foreground hover:opacity-90 text-primary-foreground font-bold shadow-sm glow-primary transition-all duration-200 active:scale-[0.98]"
           >
             {loading ? "Saving..." : "Save Profile"}
           </Button>
         </section>
 
+        {/* Appearance */}
+        <section className="glass-card rounded-2xl p-6 space-y-4">
+          <div className="flex items-center gap-3">
+            <div className="w-11 h-11 rounded-2xl bg-secondary flex items-center justify-center">
+              <Palette size={20} className="text-muted-foreground" />
+            </div>
+            <div>
+              <h2 className="font-display font-bold text-foreground">Appearance</h2>
+              <p className="text-xs text-muted-foreground">Toggle dark mode using the button in the header</p>
+            </div>
+          </div>
+        </section>
+
         {/* Account Info */}
-        <section className="bg-card border border-border rounded-xl p-6 space-y-4">
-          <h2 className="font-display font-semibold text-foreground">Account</h2>
-          <div className="space-y-2">
-            <p className="text-sm text-muted-foreground">Email</p>
+        <section className="glass-card rounded-2xl p-6 space-y-4">
+          <div className="flex items-center gap-3">
+            <div className="w-11 h-11 rounded-2xl bg-secondary flex items-center justify-center">
+              <Shield size={20} className="text-muted-foreground" />
+            </div>
+            <div>
+              <h2 className="font-display font-bold text-foreground">Account</h2>
+              <p className="text-xs text-muted-foreground">Your account details</p>
+            </div>
+          </div>
+          <div className="bg-secondary/20 rounded-xl px-4 py-3 border border-border/30">
+            <p className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider mb-1">Email</p>
             <p className="text-sm font-medium text-foreground">{user?.email}</p>
           </div>
         </section>

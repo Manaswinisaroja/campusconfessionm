@@ -6,40 +6,49 @@
 
 @layer base {
   :root {
-    --background: 220 20% 97%;
-    --foreground: 220 25% 10%;
+    --background: 240 20% 97%;
+    --foreground: 230 25% 10%;
 
     --card: 0 0% 100%;
-    --card-foreground: 220 25% 10%;
+    --card-foreground: 230 25% 10%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 220 25% 10%;
+    --popover-foreground: 230 25% 10%;
 
-    --primary: 250 60% 52%;
+    --primary: 256 67% 59%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 220 15% 93%;
-    --secondary-foreground: 220 25% 10%;
+    --secondary: 240 12% 93%;
+    --secondary-foreground: 230 25% 10%;
 
-    --muted: 220 15% 93%;
-    --muted-foreground: 220 10% 50%;
+    --muted: 240 12% 93%;
+    --muted-foreground: 230 10% 46%;
 
-    --accent: 250 60% 95%;
-    --accent-foreground: 250 60% 40%;
+    --accent: 256 60% 95%;
+    --accent-foreground: 256 67% 45%;
 
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 220 15% 90%;
-    --input: 220 15% 90%;
-    --ring: 250 60% 52%;
+    --success: 142 72% 42%;
+    --success-foreground: 0 0% 100%;
 
-    --radius: 0.75rem;
+    --border: 240 12% 91%;
+    --input: 240 12% 91%;
+    --ring: 256 67% 59%;
+
+    --radius: 0.875rem;
 
     --tag-confession: 270 60% 58%;
-    --tag-crush: 330 70% 60%;
+    --tag-confession-bg: 270 60% 95%;
+    --tag-crush: 330 80% 62%;
+    --tag-crush-bg: 330 80% 95%;
     --tag-rant: 0 72% 55%;
-    --tag-funny: 45 90% 50%;
+    --tag-rant-bg: 0 72% 95%;
+    --tag-funny: 42 95% 52%;
+    --tag-funny-bg: 42 95% 94%;
+
+    --glow-primary: 256 67% 59%;
 
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 240 5.3% 26.1%;
@@ -54,38 +63,47 @@
   }
 
   .dark {
-    --background: 225 25% 8%;
-    --foreground: 220 15% 90%;
+    --background: 230 20% 7%;
+    --foreground: 220 20% 92%;
 
-    --card: 225 20% 12%;
-    --card-foreground: 220 15% 90%;
+    --card: 230 18% 11%;
+    --card-foreground: 220 20% 92%;
 
-    --popover: 225 20% 12%;
-    --popover-foreground: 220 15% 90%;
+    --popover: 230 18% 11%;
+    --popover-foreground: 220 20% 92%;
 
-    --primary: 250 60% 60%;
+    --primary: 256 67% 65%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 225 15% 18%;
-    --secondary-foreground: 220 15% 90%;
+    --secondary: 230 14% 16%;
+    --secondary-foreground: 220 20% 92%;
 
-    --muted: 225 15% 18%;
-    --muted-foreground: 220 10% 55%;
+    --muted: 230 14% 16%;
+    --muted-foreground: 220 10% 52%;
 
-    --accent: 250 40% 20%;
-    --accent-foreground: 250 60% 80%;
+    --accent: 256 30% 18%;
+    --accent-foreground: 256 60% 80%;
 
-    --destructive: 0 62.8% 30.6%;
+    --destructive: 0 62% 35%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 225 15% 20%;
-    --input: 225 15% 20%;
-    --ring: 250 60% 60%;
+    --success: 142 60% 38%;
+    --success-foreground: 0 0% 100%;
 
-    --tag-confession: 270 60% 65%;
-    --tag-crush: 330 70% 65%;
-    --tag-rant: 0 72% 60%;
-    --tag-funny: 45 90% 55%;
+    --border: 230 14% 18%;
+    --input: 230 14% 18%;
+    --ring: 256 67% 65%;
+
+    --tag-confession: 270 60% 68%;
+    --tag-confession-bg: 270 40% 16%;
+    --tag-crush: 330 70% 68%;
+    --tag-crush-bg: 330 40% 16%;
+    --tag-rant: 0 72% 62%;
+    --tag-rant-bg: 0 40% 16%;
+    --tag-funny: 42 90% 58%;
+    --tag-funny-bg: 42 40% 16%;
+
+    --glow-primary: 256 67% 65%;
 
     --sidebar-background: 240 5.9% 10%;
     --sidebar-foreground: 240 4.8% 95.9%;
@@ -103,7 +121,9 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground antialiased;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
   h1, h2, h3, h4 {
     font-family: 'Space Grotesk', sans-serif;
@@ -112,20 +132,42 @@
 
 @layer utilities {
   .tag-confession {
-    background-color: hsl(var(--tag-confession) / 0.15);
+    background-color: hsl(var(--tag-confession-bg));
     color: hsl(var(--tag-confession));
+    box-shadow: 0 0 12px hsl(var(--tag-confession) / 0.15);
   }
   .tag-crush {
-    background-color: hsl(var(--tag-crush) / 0.15);
+    background-color: hsl(var(--tag-crush-bg));
     color: hsl(var(--tag-crush));
+    box-shadow: 0 0 12px hsl(var(--tag-crush) / 0.15);
   }
   .tag-rant {
-    background-color: hsl(var(--tag-rant) / 0.15);
+    background-color: hsl(var(--tag-rant-bg));
     color: hsl(var(--tag-rant));
+    box-shadow: 0 0 12px hsl(var(--tag-rant) / 0.15);
   }
   .tag-funny {
-    background-color: hsl(var(--tag-funny) / 0.15);
+    background-color: hsl(var(--tag-funny-bg));
     color: hsl(var(--tag-funny));
+    box-shadow: 0 0 12px hsl(var(--tag-funny) / 0.15);
+  }
+
+  .glass-card {
+    @apply bg-card/80 backdrop-blur-md border border-border/60;
+  }
+
+  .glow-primary {
+    box-shadow: 0 0 20px hsl(var(--glow-primary) / 0.25),
+                0 0 60px hsl(var(--glow-primary) / 0.08);
+  }
+
+  .card-hover {
+    @apply transition-all duration-300;
+  }
+  .card-hover:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px hsl(var(--foreground) / 0.08),
+                0 2px 8px hsl(var(--foreground) / 0.04);
   }
 
   @keyframes fade-in {
@@ -136,7 +178,7 @@
   @keyframes fade-in-up {
     from {
       opacity: 0;
-      transform: translateY(10px);
+      transform: translateY(16px);
     }
     to {
       opacity: 1;
@@ -144,11 +186,74 @@
     }
   }
 
+  @keyframes slide-up {
+    from {
+      opacity: 0;
+      transform: translateY(24px) scale(0.98);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
+
+  @keyframes shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+  }
+
+  @keyframes bounce-in {
+    0% { transform: scale(0.3); opacity: 0; }
+    50% { transform: scale(1.05); }
+    70% { transform: scale(0.9); }
+    100% { transform: scale(1); opacity: 1; }
+  }
+
+  @keyframes pulse-ring {
+    0% { transform: scale(1); opacity: 1; }
+    100% { transform: scale(1.5); opacity: 0; }
+  }
+
   .animate-fade-in {
-    animation: fade-in 0.2s ease-out;
+    animation: fade-in 0.3s ease-out;
   }
 
   .animate-fade-in-up {
-    animation: fade-in-up 0.3s ease-out;
+    animation: fade-in-up 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .animate-slide-up {
+    animation: slide-up 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .animate-bounce-in {
+    animation: bounce-in 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  }
+
+  .skeleton-shimmer {
+    background: linear-gradient(
+      90deg,
+      hsl(var(--muted)) 25%,
+      hsl(var(--muted-foreground) / 0.08) 50%,
+      hsl(var(--muted)) 75%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+  }
+
+  .ripple {
+    position: relative;
+    overflow: hidden;
+  }
+  .ripple::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at var(--ripple-x, 50%) var(--ripple-y, 50%), hsl(var(--primary) / 0.15) 0%, transparent 60%);
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  .ripple:active::after {
+    opacity: 1;
   }
 }
