@@ -44,7 +44,8 @@ export default function LoginPage() {
       if (error) {
         toast.error(error.message);
       } else {
-        onLoginSuccess?.();
+        toast.success("Signed in successfully!");
+        navigate("/");
       }
     }
     setLoading(false);
