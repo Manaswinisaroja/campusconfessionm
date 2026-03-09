@@ -3,12 +3,20 @@ import { Flame, Clock } from "lucide-react";
 
 const TAGS: (TagType | "All")[] = ["All", "Confession", "Crush", "Rant", "Funny Story"];
 
+const TAG_EMOJI: Record<string, string> = {
+  All: "✨",
+  Confession: "🤫",
+  Crush: "💘",
+  Rant: "😤",
+  "Funny Story": "😂",
+};
+
 const TAG_ACTIVE_MAP: Record<string, string> = {
-  All: "bg-primary text-primary-foreground",
-  Confession: "bg-tag-confession/20 text-tag-confession border-tag-confession/30",
-  Crush: "bg-tag-crush/20 text-tag-crush border-tag-crush/30",
-  Rant: "bg-tag-rant/20 text-tag-rant border-tag-rant/30",
-  "Funny Story": "bg-tag-funny/20 text-tag-funny border-tag-funny/30",
+  All: "bg-primary text-primary-foreground shadow-sm",
+  Confession: "tag-confession font-bold",
+  Crush: "tag-crush font-bold",
+  Rant: "tag-rant font-bold",
+  "Funny Story": "tag-funny font-bold",
 };
 
 interface FeedControlsProps {
@@ -25,16 +33,20 @@ export function FeedControls({ sort, onSortChange, activeTag, onTagChange }: Fee
       <div className="flex gap-2">
         <button
           onClick={() => onSortChange("new")}
-          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-colors ${
-            sort === "new" ? "bg-primary text-primary-foreground" : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
+          className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all duration-200 active:scale-95 ${
+            sort === "new"
+              ? "bg-primary text-primary-foreground shadow-sm glow-primary"
+              : "bg-secondary/60 text-muted-foreground hover:text-foreground hover:bg-secondary"
           }`}
         >
           <Clock size={14} /> New
         </button>
         <button
           onClick={() => onSortChange("top")}
-          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-colors ${
-            sort === "top" ? "bg-primary text-primary-foreground" : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
+          className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all duration-200 active:scale-95 ${
+            sort === "top"
+              ? "bg-primary text-primary-foreground shadow-sm glow-primary"
+              : "bg-secondary/60 text-muted-foreground hover:text-foreground hover:bg-secondary"
           }`}
         >
           <Flame size={14} /> Top
@@ -47,13 +59,13 @@ export function FeedControls({ sort, onSortChange, activeTag, onTagChange }: Fee
           <button
             key={t}
             onClick={() => onTagChange(t)}
-            className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition-colors ${
+            className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all duration-200 active:scale-95 ${
               activeTag === t
                 ? TAG_ACTIVE_MAP[t]
-                : "bg-secondary text-secondary-foreground border-transparent hover:bg-secondary/80"
+                : "bg-secondary/60 text-muted-foreground hover:text-foreground hover:bg-secondary"
             }`}
           >
-            {t}
+            {TAG_EMOJI[t]} {t}
           </button>
         ))}
       </div>

@@ -26,10 +26,10 @@ export function DarkModeToggle() {
   return (
     <button
       onClick={() => setDark(!dark)}
-      className="p-2 rounded-full bg-secondary text-secondary-foreground hover:bg-secondary/80 transition-colors"
+      className="p-2 rounded-xl bg-secondary/60 text-muted-foreground hover:text-foreground hover:bg-secondary transition-all duration-300 active:scale-90"
       aria-label="Toggle dark mode"
     >
-      {dark ? <Sun size={18} /> : <Moon size={18} />}
+      {dark ? <Sun size={16} className="transition-transform duration-300 rotate-0 hover:rotate-45" /> : <Moon size={16} className="transition-transform duration-300 rotate-0 hover:-rotate-12" />}
     </button>
   );
 }

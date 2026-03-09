@@ -11,6 +11,12 @@ import { Send, X } from "lucide-react";
 
 const MAX_CHARS = 300;
 const TAGS: TagType[] = ["Confession", "Crush", "Rant", "Funny Story"];
+const TAG_EMOJI: Record<string, string> = {
+  Confession: "🤫",
+  Crush: "💘",
+  Rant: "😤",
+  "Funny Story": "😂",
+};
 
 interface ConfessionFormProps {
   onPostCreated: () => void;
@@ -62,12 +68,12 @@ export function ConfessionForm({ onPostCreated, onClose }: ConfessionFormProps) 
   };
 
   return (
-    <div className="rounded-xl border border-border bg-card p-5 shadow-sm animate-fade-in-up">
+    <div className="rounded-2xl glass-card p-5 sm:p-6 animate-fade-in-up">
       <div className="flex items-center justify-between mb-4">
-        <h2 className="font-display text-lg font-semibold text-card-foreground">Share your confession</h2>
+        <h2 className="font-display text-base font-bold text-card-foreground">Share your confession</h2>
         {onClose && (
-          <button onClick={onClose} className="text-muted-foreground hover:text-foreground transition-colors">
-            <X size={20} />
+          <button onClick={onClose} className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary/60 transition-all active:scale-90">
+            <X size={18} />
           </button>
         )}
       </div>
@@ -76,28 +82,28 @@ export function ConfessionForm({ onPostCreated, onClose }: ConfessionFormProps) 
         placeholder="What's on your mind? Spill the tea... ☕"
         value={message}
         onChange={(e) => setMessage(e.target.value)}
-        className="min-h-[100px] resize-none bg-secondary/50 border-0 focus-visible:ring-1 focus-visible:ring-primary"
+        className="min-h-[100px] resize-none bg-secondary/30 border border-border/40 rounded-xl focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:border-primary/30 text-sm placeholder:text-muted-foreground/50"
       />
 
       <div className="flex items-center justify-between mt-2 mb-4">
-        <span className={`text-xs font-medium ${isOverLimit ? "text-destructive" : "text-muted-foreground"}`}>
+        <span className={`text-xs font-bold tabular-nums ${isOverLimit ? "text-destructive" : "text-muted-foreground/50"}`}>
           {charCount}/{MAX_CHARS}
         </span>
         {user && (
           <span className="text-xs text-muted-foreground">
-            Posting as <span className="font-semibold text-foreground">{user.user_metadata?.full_name || user.email}</span>
+            Posting as <span className="font-bold text-foreground">{user.user_metadata?.full_name || user.email}</span>
           </span>
         )}
       </div>
 
       <div className="flex flex-col sm:flex-row gap-3">
         <Select value={tag} onValueChange={(v) => setTag(v as TagType)}>
-          <SelectTrigger className="w-full sm:w-[180px] bg-secondary/50 border-0">
+          <SelectTrigger className="w-full sm:w-[180px] bg-secondary/30 border-border/40 rounded-xl">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
             {TAGS.map((t) => (
-              <SelectItem key={t} value={t}>{t}</SelectItem>
+              <SelectItem key={t} value={t}>{TAG_EMOJI[t]} {t}</SelectItem>
             ))}
           </SelectContent>
         </Select>
@@ -105,9 +111,9 @@ export function ConfessionForm({ onPostCreated, onClose }: ConfessionFormProps) 
         <Button
           onClick={handleSubmit}
           disabled={loading || !message.trim()}
-          className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold gap-2"
+          className="flex-1 rounded-xl bg-gradient-to-r from-primary to-accent-foreground hover:opacity-90 text-primary-foreground font-bold gap-2 shadow-sm transition-all duration-200 active:scale-[0.98]"
         >
-          <Send size={16} />
+          <Send size={15} />
           {loading ? "Posting..." : "Post Confession"}
         </Button>
       </div>
