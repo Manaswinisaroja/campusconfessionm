@@ -4,11 +4,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Eye, EyeOff, Zap } from "lucide-react";
 
-interface LoginPageProps {
-  onLoginSuccess?: () => void;
-}
+import { useNavigate } from "react-router-dom";
 
-export default function LoginPage({ onLoginSuccess }: LoginPageProps) {
+export default function LoginPage() {
+  const navigate = useNavigate();
   const [mode, setMode] = useState<"signin" | "signup">("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
