@@ -1,11 +1,13 @@
 import { useState, useEffect, useCallback } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { ConfessionForm } from "@/components/ConfessionForm";
 import { PostCard } from "@/components/PostCard";
 import { FeedControls } from "@/components/FeedControls";
 import { DarkModeToggle } from "@/components/DarkModeToggle";
+import { useAuth } from "@/contexts/AuthContext";
 import type { Post, TagType, SortMode } from "@/lib/types";
-import { MessageSquarePlus } from "lucide-react";
+import { MessageSquarePlus, LogOut } from "lucide-react";
 
 export default function Index() {
   const [posts, setPosts] = useState<Post[]>([]);
@@ -13,19 +15,16 @@ export default function Index() {
   const [sort, setSort] = useState<SortMode>("new");
   const [activeTag, setActiveTag] = useState<TagType | "All">("All");
   const [showForm, setShowForm] = useState(false);
+  const { user, signOut } = useAuth();
+  const navigate = useNavigate();
 
   const fetchPosts = useCallback(async () => {
     let query = supabase.from("posts").select("*");
 
-    if (activeTag !== "All") {
-      query = query.eq("tag", activeTag);
-    }
-
-    if (sort === "new") {
-      query = query.order("created_at", { ascending: false });
-    } else {
-      query = query.order("vote_count", { ascending: false });
-    }
+    if (activeTag !== "All") query = query.eq("tag", activeTag);
+    query = sort === "new"
+      ? query.order("created_at", { ascending: false })
+      : query.order("vote_count", { ascending: false });
 
     const { data } = await query;
     setPosts((data as Post[]) || []);
@@ -38,18 +37,34 @@ export default function Index() {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
       <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-lg border-b border-border">
-        <div className="max-w-2xl mx-auto px-4 py-3 flex items-center justify-between">
-          <h1 className="font-display text-xl font-bold text-foreground">
-            🎓 Campus Confessions
-          </h1>
-          <DarkModeToggle />
+        <div className="max-w-2xl mx-auto px-4 py-3 flex items-center justify-between gap-2">
+          <h1 className="font-display text-xl font-bold text-foreground">🎓 Campus Confessions</h1>
+          <div className="flex items-center gap-2">
+            <DarkModeToggle />
+            {user ? (
+              <button
+                onClick={async () => {
+                  await signOut();
+                  navigate("/");
+                }}
+                className="px-3 py-2 rounded-lg bg-secondary text-secondary-foreground hover:bg-secondary/80 transition-colors text-xs font-semibold flex items-center gap-1.5"
+              >
+                <LogOut size={14} /> Logout
+              </button>
+            ) : (
+              <Link
+                to="/login"
+                className="px-3 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors text-xs font-semibold"
+              >
+                Login
+              </Link>
+            )}
+          </div>
         </div>
       </header>
 
       <main className="max-w-2xl mx-auto px-4 py-6 pb-24 space-y-5">
-        {/* CTA Button */}
         <button
           onClick={() => setShowForm(!showForm)}
           className="w-full py-3 rounded-lg bg-primary text-primary-foreground font-display font-semibold text-sm hover:bg-primary/90 transition-colors flex items-center justify-center gap-2 shadow-sm"
@@ -58,15 +73,10 @@ export default function Index() {
           {showForm ? "Close" : "Post a Confession"}
         </button>
 
-        {/* Form */}
-        {showForm && (
-          <ConfessionForm onPostCreated={fetchPosts} onClose={() => setShowForm(false)} />
-        )}
+        {showForm && <ConfessionForm onPostCreated={fetchPosts} onClose={() => setShowForm(false)} />}
 
-        {/* Controls */}
         <FeedControls sort={sort} onSortChange={setSort} activeTag={activeTag} onTagChange={setActiveTag} />
 
-        {/* Feed */}
         {loading ? (
           <div className="space-y-4">
             {[1, 2, 3].map((i) => (
@@ -87,7 +97,6 @@ export default function Index() {
         )}
       </main>
 
-      {/* Mobile FAB */}
       {!showForm && (
         <button
           onClick={() => {
